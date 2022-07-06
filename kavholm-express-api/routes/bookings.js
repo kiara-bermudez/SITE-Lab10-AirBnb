@@ -42,4 +42,16 @@ router.get(
   }
 )
 
+router.post("/listings/:listingId/", security.requireAuthenticatedUser, permissions.authedUserIsNotListingOwner, async (req, res, next) => {
+  try {
+    const {user, listing} = res.locals
+    const {newBooking} = req.body
+    const booking = await Booking.createBooking({newBooking, listing, user});
+    return res.status(201).json({ booking })
+  } catch(error) {
+    console.log(error)
+    next(error)
+  }
+})
+
 module.exports = router

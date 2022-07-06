@@ -15,6 +15,54 @@ afterEach(commonAfterEach)
 afterAll(commonAfterAll)
 
 describe("Booking", () => {
+  describe("Test createBooking", () => {
+    test("Can create a new booking with valid params", async () => {
+      const user = { username: "jlo" }
+      const listingId = testListingIds[0]
+      const listing = await Listing.fetchListingById(listingId)
+
+      const newBooking = {
+        startDate: new Date("07-06-2022"),
+        endDate: new Date("07-09-2022"),
+        guests: 3
+      }
+
+      const booking = await Booking.createBooking({newBooking, listing, user})
+
+      expect(booking).toEqual({
+        id: expect.any(Number),
+        startDate: new Date("07-06-2022"),
+        endDate: new Date("07-09-2022"),
+        paymentMethod: "card",
+        guests: 3,
+        hostUsername: "lebron",
+        username: "jlo",
+        listingId: listingId,
+        totalCost: Math.ceil((((newBooking.endDate-newBooking.startDate)/86400000)+1)  * (listing.price * 1.1))-1,
+        userId: expect.any(Number),
+        createdAt: expect.any(Date)
+      })
+    })
+
+    test("Throws error with invalid params", async () => {
+      expect.assertions(1)
+
+      const user = { username: "jlo" }
+      const listingId = testListingIds[0]
+      const listing = await Listing.fetchListingById(listingId)
+
+      const newBooking = {
+        endDate: new Date("07-07-2022")
+      }
+
+      try {
+        await Booking.createBooking(newBooking, listing, user)
+      } catch(error) {
+        expect(error instanceof BadRequestError).toBeTruthy()
+      }
+    })
+  })
+
   describe("Test listBookingsFromUser", () => {
     test("Fetches all of the authenticated users' bookings", async () => {
       const user = { username: "jlo" }
